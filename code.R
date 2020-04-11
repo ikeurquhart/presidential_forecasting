@@ -2,7 +2,7 @@ options(digits = 3)
 # machine learning model to forecast election results at the state level; include confidence interval
 # can be used, for example, to find probability that PA goes blue in 2028--will obviously be less accurate over time
 # data taken from MIT Election Data and Science Lab, 2017, "U.S. President 1976-2016", https://doi.org/10.7910/DVN/42MVDX, Harvard Dataverse, V5, UNF:6:Mw0hOUHAijKPTVRAe5jJvg== [fileUNF]
-# library(tidyverse)
+library(tidyverse)
 filename <- '1976-2016-president.csv'
 read_lines(filename, n_max = 3)
 file <- read.csv(filename)
@@ -14,17 +14,30 @@ dem <- file %>% filter(party %in% c('democrat', "democratic-farmer-labor") & can
 rep <- file %>% filter(party == 'republican' & writein == FALSE) %>% select(year, state_po, party, candidatevotes, totalvotes)
 
 votes_simple <- data.frame(year = dem$year, state = dem$state_po, percent_dem = dem$candidatevotes / (rep$candidatevotes + dem$candidatevotes))
-ggplot(votes_simple, aes(year, percent_dem, col = state)) + geom_line() + 
-  geom_text(aes(label = state), size = 3.5) +
-  theme(legend.position = "none")
-ggplot(votes_simple, aes(year, percent_dem, col = state)) + geom_line() +
-  geom_text(aes(label = state), size = 3.5, check_overlap = T) +
-  theme(legend.position = "none")
+# ggplot(votes_simple, aes(year, percent_dem, col = state)) + geom_line() + 
+  # geom_text(aes(label = state), size = 3.5) +
+  # theme(legend.position = "none")
 # by_state <- votes_simple %>% group_by(state) %>% summarize (perc = mean(percent_dem))
-# # summarize(average = mean(height), standard_deviation = sd(height))
-# by_state
+# Al <- votes_simple %>% filter(state == 'AL')
+# Al
+# Al %>% ggplot(aes(year, percent_dem)) +
+#   geom_point() +
+#   geom_smooth(method = "lm")
 
-
+sts <- votes_simple %>% filter(year == 1976) %>% .$state
+# for (s in sts){
+#   st <- votes_simple %>% filter(state == s) %>% ggplot(aes(year, percent_dem)) +
+#       geom_point() +
+#       geom_smooth(method = "lm")
+#   plot(st)
+# }
+s = 'UT'
+setwd('~/graphs')
+st <- votes_simple %>% filter(state == s) %>% ggplot(aes(year, percent_dem)) +
+  geom_point() +
+  geom_smooth(method = "lm")
+jpeg('test.jpg')
+plot(st)
 
 
 # # slope of regression line
@@ -53,4 +66,4 @@ ggplot(votes_simple, aes(year, percent_dem, col = state)) + geom_line() +
 # # each state (except NE and ME) is all or nothing
 # # likeablilty/electability/gaffs are accounted for through bias term that shifts all states by N(0, .01) amount
 # # goes against theory that 95% of people vote based on party and the rest vote based on the current state of the economy but I'd feel bad not including it
-# 
+# # look at what would have happened for previous elections
