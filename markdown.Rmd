@@ -39,10 +39,33 @@ rep <- file %>% filter(party == 'republican' & writein == FALSE) %>% select(year
 votes_simple <- data.frame(year = dem$year, state = dem$state_po, percent_dem = dem$candidatevotes / (rep$candidatevotes + dem$candidatevotes))
 ```
 
-
+-plot of every state over time
+-very busy and I don't know if it gives that much information
+-larger range in data which hints at increased polarization. can't really see divergence on a state-by-state basis but again, a very busy plot
 
 ```{r plot_all_states, include = FALSE}
 ggplot(votes_simple, aes(year, percent_dem, col = state)) + geom_line() +
   geom_text(aes(label = state), size = 3.5) +
   theme(legend.position = "none")
+```
+
+-linear model fit for each state
+-interesting that GA and TX are both becoming more conservative even with more liberal trends in the last several elections due to 1976 and 1980 being liberal years. could begin in 1984 but that feels like cherry picking. including an x^2 term will most likely remove this.
+-should also look into something that gives an increased weight to more recent data
+
+```{r plot_linear}
+setwd('C:/Users/ikeur/OneDrive/Documents/learn r/presidential_forecasting/graphs/states_linear')
+sts <- votes_simple %>% filter(year == 1976) %>% .$state
+for (s in sts){
+  print(s)
+  name <- paste(s, 'linear.jpg', sep = '')
+  jpeg(filename = name)
+  st <- votes_simple %>% filter(state == s) %>% ggplot(aes(year, percent_dem)) +
+    geom_point() +
+    geom_smooth(method = "lm") +
+    ggtitle(s) +
+    theme(plot.title = element_text(hjust = 0.5))
+  plot(st)
+  dev.off()
+}
 ```
