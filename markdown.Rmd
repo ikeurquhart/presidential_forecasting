@@ -9,11 +9,9 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## R Markdown
-
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+INTERESTING FINDINGS
+-HRC recieved 22x as many votes as DJT in DC
+-only 6 states becoming more moderate from linear extrapolation
 
 -machine learning model to forecast election results at the state level; include confidence interval
 -can be used, for example, to find probability that PA goes blue in 2028--will obviously be less accurate over time
@@ -52,20 +50,29 @@ ggplot(votes_simple, aes(year, percent_dem, col = state)) + geom_line() +
 -linear model fit for each state
 -interesting that GA and TX are both becoming more conservative even with more liberal trends in the last several elections due to 1976 and 1980 being liberal years. could begin in 1984 but that feels like cherry picking. including an x^2 term will most likely remove this.
 -should also look into something that gives an increased weight to more recent data
+-note: includes confidence interval not prediction interval. looks at averages, not individual predictions
 
 ```{r plot_linear}
 setwd('C:/Users/ikeur/OneDrive/Documents/learn r/presidential_forecasting/graphs/states_linear')
 sts <- votes_simple %>% filter(year == 1976) %>% .$state
 for (s in sts){
-  print(s)
   name <- paste(s, 'linear.jpg', sep = '')
   jpeg(filename = name)
-  st <- votes_simple %>% filter(state == s) %>% ggplot(aes(year, percent_dem)) +
+  filt <- votes_simple %>% filter(state == s)
+  lin <- lm(percent_dem ~ year, data = filt)
+  new.dat <- data.frame(year = c(1976, 2016))
+  pre <- predict(lin, newdata = new.dat, interval = 'confidence')
+  include_50 <- (max(pre, filt$percent_dem) > .48 & min(pre, filt$percent_dem) < .52)
+  st <- filt %>% ggplot(aes(year, percent_dem)) +
     geom_point() +
     geom_smooth(method = "lm") +
-    ggtitle(s) +
+    ggtitle(s) + 
     theme(plot.title = element_text(hjust = 0.5))
-  plot(st)
+  if (include_50){
+    plot(st + geom_segment(aes(x = 1976, y = .5, xend = 2016, yend = .5), linetype='dashed'))
+  } else {
+    plot(st)
+  }
   dev.off()
 }
 ```

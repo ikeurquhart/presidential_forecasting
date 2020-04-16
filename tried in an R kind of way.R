@@ -44,7 +44,7 @@ fits
 class(fits)
 new.dat <- data.frame(years = yrs)
 # p <- predict(fits, newdata = new.dat, interval = 'prediction')
-p <- predict(fits, interval = 'prediction') %>% group_by(state)
+p <- predict(fits, interval = 'prediction')
 summary(p)
 
 stop()
